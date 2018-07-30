@@ -1,0 +1,13 @@
+#####
+## Environment file defining the JASMIN Heat resources
+#####
+
+parameters:
+  # This is the ID of the current CentOS 7 image on the JASMIN Cloud
+  image: d2b7e3a8-3dbb-4cfc-a069-773e0e9a30a2
+
+resource_registry:
+  "JASMIN::Config::InstallHeatAgents": "config/heat_agents/install.yaml"
+  "JASMIN::Config::GitClone": "config/git_clone.yaml"
+  "JASMIN::Config::Deployment": "config/deployment.yaml"
+  "JASMIN::Base::Server": "base/server.yaml"

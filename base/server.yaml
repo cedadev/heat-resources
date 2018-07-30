@@ -1,0 +1,74 @@
+#####
+## Template for a JASMIN server
+##
+## This is a regular OS::Nova::Server, but using a volume for the root disk
+## and with the Heat agents installed
+#####
+
+heat_template_version: 2016-04-08
+
+
+parameters:
+  name:
+    type: string
+    label: The server name (this will be prefixed with the stack name)
+
+  image:
+    type: string
+    label: The image to use (this should be set by the environment)
+    constraints:
+      - custom_constraint: glance.image
+
+  flavor:
+    type: string
+    label: Flavor to use
+    constraints:
+      - custom_constraint: nova.flavor
+
+  key_name:
+    type: string
+    label: SSH key pair for access
+    constraints:
+      - custom_constraint: nova.keypair
+
+  network:
+    type: string
+    label: Private network to use
+    constraints:
+      - custom_constraint: neutron.network
+
+  root_volume_size:
+    type: number
+    label: Size of volume for root filesystem
+    default: 20
+
+
+resources:
+  install_heat_agents:
+    type: JASMIN::Config::InstallHeatAgents
+
+  server:
+    type: OS::Nova::Server
+    properties:
+      name:
+        str_replace:
+          template: $stack_name-$name
+          params:
+            $stack_name: { get_param: "OS::stack_name" }
+            $name: { get_param: name }
+      flavor: { get_param: flavor }
+      key_name: { get_param: key_name }
+      networks:
+        - network: { get_param: network }
+      block_device_mapping_v2:
+        - image_id: { get_param: image }
+          volume_size: { get_param: root_volume_size }
+          delete_on_termination: true
+      software_config_transport: POLL_SERVER_CFN
+      user_data_format: SOFTWARE_CONFIG
+      user_data: { get_attr: [install_heat_agents, config] }
+
+
+outputs:
+  server:
+    value: { get_resource: server }

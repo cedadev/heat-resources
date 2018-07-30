@@ -1,0 +1,45 @@
+#####
+## Heat template for a configuration that checks out a git repository
+#####
+
+heat_template_version: 2016-04-08
+
+
+resources:
+  software_config:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ansible
+      inputs:
+         - name: repository
+           label: The repository to clone
+         - name: version
+           label: The version to check out
+           default: HEAD
+         - name: destination
+           label: The destination path
+      config: |
+        ---
+        - hosts: localhost
+          connection: local
+          tasks:
+            - name: Install git
+              yum:
+                name: git
+                state: latest
+
+            - name: Ensure destination directory exists
+              file:
+                path: "{{ destination }}"
+                state: directory
+
+            - name: Clone repository
+              git:
+                repo: "{{ repository }}"
+                version: "{{ version }}"
+                dest: "{{ destination }}"
+
+
+outputs:
+  config:
+    value: { get_resource: software_config }
