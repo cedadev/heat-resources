@@ -29,6 +29,11 @@ parameters:
     label: Size of volume for root filesystem
     default: 20
 
+#  kubernetes_version:
+#    type: string
+#    label: The Kubernetes version to deploy
+#    default: "1.11"
+
   worker_count:
     type: number
     label: The number of workers to deploy
@@ -66,7 +71,7 @@ resources:
           key_name: { get_param: key_name }
           network: { get_param: network }
           root_volume_size: { get_param: root_volume_size }
-          master_ip: { get_attr: [master, ip] }
+          master_ip: { get_attr: [master, networks, { get_param: network }, 0] }
           kubeadm_token: { get_attr: [master, kubeadm_token] }
 
 

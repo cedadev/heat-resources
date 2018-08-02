@@ -72,12 +72,3 @@ outputs:
 
   deployment:
     value: { get_resource: deployment }
-
-  deploy_status_code:
-    value: { get_attr: [deployment, deploy_status_code] }
-
-  deploy_stdout:
-    value: { get_attr: [deployment, deploy_stdout] }
-
-  deploy_stderr:
-    value: { get_attr: [deployment, deploy_stderr] }

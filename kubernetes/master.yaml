@@ -76,8 +76,29 @@ outputs:
   server:
     value: { get_attr: [server, server] }
 
-  ip:
-    value: { get_attr: [server, ip] }
+  accessIPv4:
+    value: { get_attr: [server, accessIPv4] }
+
+  accessIPv6:
+    value: { get_attr: [server, accessIPv6] }
+
+  addresses:
+    value: { get_attr: [server, addresses] }
+
+  console_urls:
+    value: { get_attr: [server, console_urls] }
+
+  instance_name:
+    value: { get_attr: [server, instance_name] }
+
+  name:
+    value: { get_attr: [server, name] }
+
+  networks:
+    value: { get_attr: [server, networks] }
+
+  show:
+    value: { get_attr: [server, show] }
 
   kubeconfig:
     value: { get_attr: [fetch_outputs_deployment, kubeconfig] }
