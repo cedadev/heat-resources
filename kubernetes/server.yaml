@@ -13,6 +13,13 @@ parameters:
     type: string
     label: The server name
 
+  # This should be set automatically by using environment.yaml
+  image:
+    type: string
+    label: The image to use (must be CentOS 7)
+    constraints:
+      - custom_constraint: glance.image
+
   flavor:
     type: string
     label: Flavor to use
@@ -36,6 +43,11 @@ parameters:
     label: Size of volume for root filesystem
     default: 20
 
+  # This should be set automatically by using environment.yaml
+  k8s_ansible_version:
+    type: string
+    label: The version of the k8s-ansible playbook to use
+
 
 resources:
   clone_playbook:
@@ -43,6 +55,7 @@ resources:
     properties:
       server: { get_attr: [server, server] }
       repository: https://github.com/cedadev/k8s-ansible.git
+      version: { get_param: k8s_ansible_version }
       destination: /opt/jasmin/k8s-ansible
 
   symlink_roles_config:
@@ -67,6 +80,7 @@ resources:
     type: JASMIN::Base::Server
     properties:
       name: { get_param: name }
+      image: { get_param: image }
       flavor: { get_param: flavor }
       key_name: { get_param: key_name }
       network: { get_param: network }

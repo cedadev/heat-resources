@@ -13,6 +13,13 @@ parameters:
     type: string
     label: The server name
 
+  # This should be set automatically by using environment.yaml
+  image:
+    type: string
+    label: The image to use (must be CentOS 7)
+    constraints:
+      - custom_constraint: glance.image
+
   flavor:
     type: string
     label: Flavor to use
@@ -45,14 +52,13 @@ resources:
     type: OS::Nova::Server
     properties:
       name: { get_param: name }
-      image: d2b7e3a8-3dbb-4cfc-a069-773e0e9a30a2
+      image: { get_param: image }
       flavor: { get_param: flavor }
       key_name: { get_param: key_name }
       networks:
         - network: { get_param: network }
 #      block_device_mapping_v2:
-        # This is the ID of the current CentOS 7 image on the JASMIN Cloud
-#        - image_id: d2b7e3a8-3dbb-4cfc-a069-773e0e9a30a2
+#        - image_id: { get_param: image }
 #          volume_size: { get_param: root_volume_size }
 #          delete_on_termination: true
       software_config_transport: POLL_SERVER_CFN

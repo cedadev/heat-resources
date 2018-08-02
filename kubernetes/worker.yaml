@@ -10,6 +10,13 @@ parameters:
     type: string
     label: The server name
 
+  # This should be set automatically by using environment.yaml
+  image:
+    type: string
+    label: The image to use (must be CentOS 7)
+    constraints:
+      - custom_constraint: glance.image
+
   flavor:
     type: string
     label: Flavor to use
@@ -33,6 +40,16 @@ parameters:
     label: Size of volume for root filesystem
     default: 20
 
+  # This should be set automatically by using environment.yaml
+  k8s_ansible_version:
+    type: string
+    label: The version of the k8s-ansible playbook to use
+
+  # This should be set automatically by using environment.yaml
+  kubernetes_version:
+    type: string
+    label: The Kubernetes version to deploy
+
   master_ip:
     type: string
     label: The IP address of the master
@@ -49,6 +66,7 @@ resources:
     type: JASMIN::Kubernetes::Kubeadm
     properties:
       server: { get_attr: [server, server] }
+      kubernetes_version: { get_param: kubernetes_version }
       role: worker
       master_ip: { get_param: master_ip }
       kubeadm_token: { get_param: kubeadm_token }
@@ -57,10 +75,12 @@ resources:
     type: JASMIN::Kubernetes::Server
     properties:
       name: { get_param: name }
+      image: { get_param: image }
       flavor: { get_param: flavor }
       key_name: { get_param: key_name }
       network: { get_param: network }
       root_volume_size: { get_param: root_volume_size }
+      k8s_ansible_version: { get_param: k8s_ansible_version }
 
 
 outputs:

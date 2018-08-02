@@ -2,6 +2,14 @@
 ## Environment file defining the JASMIN Heat resources
 #####
 
+parameters:
+  # This is the ID of the current CentOS 7 image on JASMIN
+  image: d2b7e3a8-3dbb-4cfc-a069-773e0e9a30a2
+  # This is the current HEAD of the k8s-ansible playbook
+  k8s_ansible_version: 810cc7d63ea66180e7277b1b88319469f768720b
+  # This is the current latest version of Kubernetes
+  kubernetes_version: "1.11.1"
+
 resource_registry:
   # Generic resources
   "JASMIN::Config::InstallHeatAgents": "config/heat_agents/install.yaml"
@@ -9,7 +17,8 @@ resource_registry:
   # Generic configuration resources
   "JASMIN::Config::GitClone": "config/git_clone.yaml"
   # Kubernetes resources
-  "JASMIN::Kubernetes::Kubeadm": "kubernetes/kubeadm.yaml"
+  "JASMIN::Kubernetes::Kubeadm": "kubernetes/config/kubeadm.yaml"
   "JASMIN::Kubernetes::Server": "kubernetes/server.yaml"
   "JASMIN::Kubernetes::Master": "kubernetes/master.yaml"
   "JASMIN::Kubernetes::Worker": "kubernetes/worker.yaml"
+  "JASMIN::Kubernetes::Cluster": "kubernetes/cluster.yaml"

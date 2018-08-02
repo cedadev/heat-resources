@@ -6,6 +6,13 @@ heat_template_version: 2016-04-08
 
 
 parameters:
+  # This should be set automatically by using environment.yaml
+  image:
+    type: string
+    label: The image to use (must be CentOS 7)
+    constraints:
+      - custom_constraint: glance.image
+
   flavor:
     type: string
     label: Flavor to use for nodes
@@ -29,10 +36,15 @@ parameters:
     label: Size of volume for root filesystem
     default: 20
 
-#  kubernetes_version:
-#    type: string
-#    label: The Kubernetes version to deploy
-#    default: "1.11"
+  # This should be set automatically by using environment.yaml
+  k8s_ansible_version:
+    type: string
+    label: The version of the k8s-ansible playbook to use
+
+  # This should be set automatically by using environment.yaml
+  kubernetes_version:
+    type: string
+    label: The Kubernetes version to deploy
 
   worker_count:
     type: number
@@ -49,10 +61,13 @@ resources:
           template: $stack_name-master
           params:
             $stack_name: { get_param: "OS::stack_name" }
+      image: { get_param: image }
       flavor: { get_param: flavor }
       key_name: { get_param: key_name }
       network: { get_param: network }
       root_volume_size: { get_param: root_volume_size }
+      k8s_ansible_version: { get_param: k8s_ansible_version }
+      kubernetes_version: { get_param: kubernetes_version }
 
   worker_group:
     type: OS::Heat::ResourceGroup
@@ -67,10 +82,13 @@ resources:
               template: $stack_name-worker%index%
               params:
                 $stack_name: { get_param: "OS::stack_name" }
+          image: { get_param: image }
           flavor: { get_param: flavor }
           key_name: { get_param: key_name }
           network: { get_param: network }
           root_volume_size: { get_param: root_volume_size }
+          k8s_ansible_version: { get_param: k8s_ansible_version }
+          kubernetes_version: { get_param: kubernetes_version }
           master_ip: { get_attr: [master, networks, { get_param: network }, 0] }
           kubeadm_token: { get_attr: [master, kubeadm_token] }
 
