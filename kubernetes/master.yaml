@@ -1,0 +1,86 @@
+#####
+## Template for a Kubernetes master
+#####
+
+heat_template_version: 2016-04-08
+
+
+parameters:
+  name:
+    type: string
+    label: The server name
+
+  flavor:
+    type: string
+    label: Flavor to use
+    constraints:
+      - custom_constraint: nova.flavor
+
+  key_name:
+    type: string
+    label: SSH key pair for access
+    constraints:
+      - custom_constraint: nova.keypair
+
+  network:
+    type: string
+    label: Private network to use
+    constraints:
+      - custom_constraint: neutron.network
+
+  root_volume_size:
+    type: number
+    label: Size of volume for root filesystem
+    default: 20
+
+
+resources:
+  kubeadm:
+    type: JASMIN::Kubernetes::Kubeadm
+    properties:
+      server: { get_attr: [server, server] }
+      role: master
+
+  fetch_outputs_config:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: script
+      outputs:
+        - name: kubeconfig
+        - name: kubeadm_token
+      config: |
+        #!/bin/bash
+        set -euxo pipefail
+        cp /etc/kubernetes/admin.conf "${heat_outputs_path}.kubeconfig"
+        kubeadm token list | head -n 2 | tail -n 1 | awk '{ print $1 };' > "${heat_outputs_path}.kubeadm_token"
+
+  fetch_outputs_deployment:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: kubeadm
+    properties:
+      signal_transport: HEAT_SIGNAL
+      config: { get_resource: fetch_outputs_config }
+      server: { get_attr: [server, server] }
+
+  server:
+    type: JASMIN::Kubernetes::Server
+    properties:
+      name: { get_param: name }
+      flavor: { get_param: flavor }
+      key_name: { get_param: key_name }
+      network: { get_param: network }
+      root_volume_size: { get_param: root_volume_size }
+
+
+outputs:
+  server:
+    value: { get_attr: [server, server] }
+
+  ip:
+    value: { get_attr: [server, ip] }
+
+  kubeconfig:
+    value: { get_attr: [fetch_outputs_deployment, kubeconfig] }
+
+  kubeadm_token:
+    value: { get_attr: [fetch_outputs_deployment, kubeadm_token] }

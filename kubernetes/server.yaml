@@ -1,0 +1,81 @@
+#####
+## Base template for a Kubernetes server
+##
+## Essentially, this is just a JASMIN::Base::Server with the
+## Kubernetes playbook checked out to it
+#####
+
+heat_template_version: 2016-04-08
+
+
+parameters:
+  name:
+    type: string
+    label: The server name
+
+  flavor:
+    type: string
+    label: Flavor to use
+    constraints:
+      - custom_constraint: nova.flavor
+
+  key_name:
+    type: string
+    label: SSH key pair for access
+    constraints:
+      - custom_constraint: nova.keypair
+
+  network:
+    type: string
+    label: Private network to use
+    constraints:
+      - custom_constraint: neutron.network
+
+  root_volume_size:
+    type: number
+    label: Size of volume for root filesystem
+    default: 20
+
+
+resources:
+  clone_playbook:
+    type: JASMIN::Config::GitClone
+    properties:
+      server: { get_attr: [server, server] }
+      repository: https://github.com/cedadev/k8s-ansible.git
+      destination: /opt/jasmin/k8s-ansible
+
+  symlink_roles_config:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: script
+      config: |
+        #!/bin/bash
+        set -eux
+        rm -rf /etc/ansible/roles
+        ln -s /opt/jasmin/k8s-ansible/roles /etc/ansible/roles
+
+  symlink_roles_deploy:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: clone_playbook
+    properties:
+      signal_transport: HEAT_SIGNAL
+      config: { get_resource: symlink_roles_config }
+      server: { get_attr: [server, server] }
+
+  server:
+    type: JASMIN::Base::Server
+    properties:
+      name: { get_param: name }
+      flavor: { get_param: flavor }
+      key_name: { get_param: key_name }
+      network: { get_param: network }
+      root_volume_size: { get_param: root_volume_size }
+
+
+outputs:
+  server:
+    value: { get_attr: [server, server] }
+
+  ip:
+    value: { get_attr: [server, ip] }

@@ -1,0 +1,71 @@
+#####
+## Template for a Kubernetes worker
+#####
+
+heat_template_version: 2016-04-08
+
+
+parameters:
+  name:
+    type: string
+    label: The server name
+
+  flavor:
+    type: string
+    label: Flavor to use
+    constraints:
+      - custom_constraint: nova.flavor
+
+  key_name:
+    type: string
+    label: SSH key pair for access
+    constraints:
+      - custom_constraint: nova.keypair
+
+  network:
+    type: string
+    label: Private network to use
+    constraints:
+      - custom_constraint: neutron.network
+
+  root_volume_size:
+    type: number
+    label: Size of volume for root filesystem
+    default: 20
+
+  master_ip:
+    type: string
+    label: The IP address of the master
+    constraints:
+      - custom_constraint: ip_addr
+
+  kubeadm_token:
+    type: string
+    label: The kubeadm token to join the cluster
+
+
+resources:
+  kubeadm:
+    type: JASMIN::Kubernetes::Kubeadm
+    properties:
+      server: { get_attr: [server, server] }
+      role: worker
+      master_ip: { get_param: master_ip }
+      kubeadm_token: { get_param: kubeadm_token }
+
+  server:
+    type: JASMIN::Kubernetes::Server
+    properties:
+      name: { get_param: name }
+      flavor: { get_param: flavor }
+      key_name: { get_param: key_name }
+      network: { get_param: network }
+      root_volume_size: { get_param: root_volume_size }
+
+
+outputs:
+  server:
+    value: { get_attr: [server, server] }
+
+  ip:
+    value: { get_attr: [server, ip] }

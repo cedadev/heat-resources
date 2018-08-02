@@ -1,5 +1,5 @@
 #####
-## Template for a configuration that checks out a git repository
+## Template for a configuration that runs the kubeadm role
 #####
 
 heat_template_version: 2016-04-08
@@ -12,18 +12,21 @@ parameters:
     constraints:
       - custom_constraint: nova.server
 
-  repository:
+  role:
     type: string
-    label: The repository to clone
+    label: The role to configure the server as
+    constraints:
+      - allowed_values: [master, worker]
 
-  version:
+  master_ip:
     type: string
-    label: The version to check out
-    default: HEAD
+    label: The IP of the master node (only required for workers)
+    default: ""
 
-  destination:
+  kubeadm_token:
     type: string
-    label: The destination path
+    label: The kubeadm token used to join the cluster (only required for workers)
+    default: ""
 
 
 resources:
@@ -32,27 +35,19 @@ resources:
     properties:
       group: ansible
       inputs:
-        - name: repository
-        - name: version
-        - name: destination
+        - name: kube_role
+        - name: kube_master_ip
+        - name: kubeadm_token
       config: |
         ---
         - hosts: localhost
           connection: local
-          tasks:
-            - name: Install git
-              yum:
-                name: git
-                state: latest
-            - name: Ensure destination directory exists
-              file:
-                path: "{{ destination }}"
-                state: directory
-            - name: Clone repository
-              git:
-                repo: "{{ repository }}"
-                version: "{{ version }}"
-                dest: "{{ destination }}"
+          roles:
+            - kubeadm
+          # For some reason, $HOME isn't set which means kubectl can't find the config file
+          # So we set it manually
+          environment:
+            HOME: /root
 
   deployment:
     type: OS::Heat::SoftwareDeployment
@@ -61,9 +56,9 @@ resources:
       config: { get_resource: config }
       server: { get_param: server }
       input_values:
-        repository: { get_param: repository }
-        version: { get_param: version }
-        destination: { get_param: destination }
+        kube_role: { get_param: role }
+        kube_master_ip: { get_param: master_ip }
+        kubeadm_token: { get_param: kubeadm_token }
 
 
 outputs:

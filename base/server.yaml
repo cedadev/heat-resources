@@ -11,13 +11,7 @@ heat_template_version: 2016-04-08
 parameters:
   name:
     type: string
-    label: The server name (this will be prefixed with the stack name)
-
-  image:
-    type: string
-    label: The image to use (this should be set by the environment)
-    constraints:
-      - custom_constraint: glance.image
+    label: The server name
 
   flavor:
     type: string
@@ -50,20 +44,17 @@ resources:
   server:
     type: OS::Nova::Server
     properties:
-      name:
-        str_replace:
-          template: $stack_name-$name
-          params:
-            $stack_name: { get_param: "OS::stack_name" }
-            $name: { get_param: name }
+      name: { get_param: name }
+      image: d2b7e3a8-3dbb-4cfc-a069-773e0e9a30a2
       flavor: { get_param: flavor }
       key_name: { get_param: key_name }
       networks:
         - network: { get_param: network }
-      block_device_mapping_v2:
-        - image_id: { get_param: image }
-          volume_size: { get_param: root_volume_size }
-          delete_on_termination: true
+#      block_device_mapping_v2:
+        # This is the ID of the current CentOS 7 image on the JASMIN Cloud
+#        - image_id: d2b7e3a8-3dbb-4cfc-a069-773e0e9a30a2
+#          volume_size: { get_param: root_volume_size }
+#          delete_on_termination: true
       software_config_transport: POLL_SERVER_CFN
       user_data_format: SOFTWARE_CONFIG
       user_data: { get_attr: [install_heat_agents, config] }
@@ -72,3 +63,6 @@ resources:
 outputs:
   server:
     value: { get_resource: server }
+
+  ip:
+    value: { get_attr: [server, networks, { get_param: network }, 0] }

@@ -1,0 +1,78 @@
+#####
+## Template for a Kubernetes cluster
+#####
+
+heat_template_version: 2016-04-08
+
+
+parameters:
+  flavor:
+    type: string
+    label: Flavor to use for nodes
+    constraints:
+      - custom_constraint: nova.flavor
+
+  key_name:
+    type: string
+    label: SSH key pair for access
+    constraints:
+      - custom_constraint: nova.keypair
+
+  network:
+    type: string
+    label: Network to connect VMs to
+    constraints:
+      - custom_constraint: neutron.network
+
+  root_volume_size:
+    type: number
+    label: Size of volume for root filesystem
+    default: 20
+
+  worker_count:
+    type: number
+    label: The number of workers to deploy
+    default: 3
+
+
+resources:
+  master:
+    type: JASMIN::Kubernetes::Master
+    properties:
+      name:
+        str_replace:
+          template: $stack_name-master
+          params:
+            $stack_name: { get_param: "OS::stack_name" }
+      flavor: { get_param: flavor }
+      key_name: { get_param: key_name }
+      network: { get_param: network }
+      root_volume_size: { get_param: root_volume_size }
+
+  worker_group:
+    type: OS::Heat::ResourceGroup
+    depends_on: master
+    properties:
+      count: { get_param: worker_count }
+      resource_def:
+        type: JASMIN::Kubernetes::Worker
+        properties:
+          name:
+            str_replace:
+              template: $stack_name-worker%index%
+              params:
+                $stack_name: { get_param: "OS::stack_name" }
+          flavor: { get_param: flavor }
+          key_name: { get_param: key_name }
+          network: { get_param: network }
+          root_volume_size: { get_param: root_volume_size }
+          master_ip: { get_attr: [master, ip] }
+          kubeadm_token: { get_attr: [master, kubeadm_token] }
+
+
+outputs:
+  master:
+    value: { get_attr: [master, server] }
+
+  kubeconfig:
+    value: { get_attr: [master, kubeconfig] }
