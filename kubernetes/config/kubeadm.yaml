@@ -12,11 +12,6 @@ parameters:
     constraints:
       - custom_constraint: nova.server
 
-  # This should be set automatically by using environment.yaml
-  kubernetes_version:
-    type: string
-    label: The Kubernetes version to deploy
-
   role:
     type: string
     label: The role to configure the server as
@@ -40,7 +35,6 @@ resources:
     properties:
       group: ansible
       inputs:
-        - name: kubernetes_version
         - name: kube_role
         - name: kube_master_ip
         - name: kubeadm_token
@@ -62,7 +56,6 @@ resources:
       config: { get_resource: config }
       server: { get_param: server }
       input_values:
-        kubernetes_version: { get_param: kubernetes_version }
         kube_role: { get_param: role }
         kube_master_ip: { get_param: master_ip }
         kubeadm_token: { get_param: kubeadm_token }

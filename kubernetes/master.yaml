@@ -45,18 +45,12 @@ parameters:
     type: string
     label: The version of the k8s-ansible playbook to use
 
-  # This should be set automatically by using environment.yaml
-  kubernetes_version:
-    type: string
-    label: The Kubernetes version to deploy
-
 
 resources:
   kubeadm:
     type: JASMIN::Kubernetes::Kubeadm
     properties:
       server: { get_attr: [server, server] }
-      kubernetes_version: { get_param: kubernetes_version }
       role: master
 
   fetch_outputs_config:

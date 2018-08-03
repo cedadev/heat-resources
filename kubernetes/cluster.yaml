@@ -41,11 +41,6 @@ parameters:
     type: string
     label: The version of the k8s-ansible playbook to use
 
-  # This should be set automatically by using environment.yaml
-  kubernetes_version:
-    type: string
-    label: The Kubernetes version to deploy
-
   worker_count:
     type: number
     label: The number of workers to deploy
@@ -67,7 +62,6 @@ resources:
       network: { get_param: network }
       root_volume_size: { get_param: root_volume_size }
       k8s_ansible_version: { get_param: k8s_ansible_version }
-      kubernetes_version: { get_param: kubernetes_version }
 
   worker_group:
     type: OS::Heat::ResourceGroup
@@ -88,7 +82,6 @@ resources:
           network: { get_param: network }
           root_volume_size: { get_param: root_volume_size }
           k8s_ansible_version: { get_param: k8s_ansible_version }
-          kubernetes_version: { get_param: kubernetes_version }
           master_ip: { get_attr: [master, networks, { get_param: network }, 0] }
           kubeadm_token: { get_attr: [master, kubeadm_token] }
 

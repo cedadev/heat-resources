@@ -7,8 +7,6 @@ parameters:
   image: d2b7e3a8-3dbb-4cfc-a069-773e0e9a30a2
   # This is the current HEAD of the k8s-ansible playbook
   k8s_ansible_version: 810cc7d63ea66180e7277b1b88319469f768720b
-  # This is the current latest version of Kubernetes
-  kubernetes_version: "1.11.1"
 
 resource_registry:
   # Generic resources
