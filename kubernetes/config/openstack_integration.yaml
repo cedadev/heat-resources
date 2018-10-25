@@ -1,0 +1,69 @@
+#####
+## Template for a configuration that runs the kubeadm role
+#####
+
+heat_template_version: 2016-04-08
+
+
+parameters:
+  server:
+    type: string
+    label: The server to configure
+    constraints:
+      - custom_constraint: nova.server
+
+  role:
+    type: string
+    label: The role to configure the server as
+    constraints:
+      - allowed_values: [master, worker]
+
+  openstack_username:
+    type: string
+    label: The username of the Openstack user to use for cluster integration
+
+  openstack_password:
+    type: string
+    label: The password of the Openstack user to use for cluster integration
+
+
+resources:
+  config:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ansible
+      inputs:
+        - name: kube_role
+        - name: openstack_tenant_id
+        - name: openstack_username
+        - name: openstack_password
+      config: |
+        ---
+        - hosts: localhost
+          connection: local
+          roles:
+            - storage_cinder
+          # For some reason, $HOME isn't set which means kubectl can't find the config file
+          # So we set it manually
+          environment:
+            HOME: /root
+
+  deployment:
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      signal_transport: HEAT_SIGNAL
+      config: { get_resource: config }
+      server: { get_param: server }
+      input_values:
+        kube_role: { get_param: role }
+        openstack_tenant_id: { get_param: "OS::project_id" }
+        openstack_username: { get_param: openstack_username }
+        openstack_password: { get_param: openstack_password }
+
+
+outputs:
+  config:
+    value: { get_resource: config }
+
+  deployment:
+    value: { get_resource: deployment }
