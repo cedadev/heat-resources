@@ -1,0 +1,84 @@
+#####
+## Template for a server that uses a volume for the root disk
+#####
+
+heat_template_version: 2016-04-08
+
+
+parameters:
+  name:
+    type: string
+    label: The server name
+
+  # This should be set automatically by using environment.yaml
+  image:
+    type: string
+    label: The image to use (must be CentOS 7)
+    constraints:
+      - custom_constraint: glance.image
+
+  flavor:
+    type: string
+    label: Flavor to use
+    constraints:
+      - custom_constraint: nova.flavor
+
+  key_name:
+    type: string
+    label: SSH key pair for access
+    constraints:
+      - custom_constraint: nova.keypair
+
+  network:
+    type: string
+    label: Private network to use
+    constraints:
+      - custom_constraint: neutron.network
+
+  root_volume_size:
+    type: number
+    label: Size of volume for root filesystem
+    default: 20
+
+
+resources:
+  install_heat_agents:
+    type: JASMIN::Base::InstallHeatAgents
+
+  server:
+    type: OS::Nova::Server
+    properties:
+      name: { get_param: name }
+      image: { get_param: image }
+      flavor: { get_param: flavor }
+      key_name: { get_param: key_name }
+      networks:
+        - network: { get_param: network }
+#      block_device_mapping_v2:
+#        - image_id: { get_param: image }
+#          volume_size: { get_param: root_volume_size }
+#          delete_on_termination: true
+      software_config_transport: POLL_SERVER_CFN
+      user_data_format: SOFTWARE_CONFIG
+      user_data: { get_attr: [install_heat_agents, config] }
+
+
+outputs:
+  server_id:
+    value: { get_resource: server }
+  accessIPv4:
+    value: { get_attr: [server, accessIPv4] }
+  accessIPv6:
+    value: { get_attr: [server, accessIPv6] }
+  addresses:
+    value: { get_attr: [server, addresses] }
+  console_urls:
+    value: { get_attr: [server, console_urls] }
+  instance_name:
+    value: { get_attr: [server, instance_name] }
+  name:
+    value: { get_attr: [server, name] }
+  networks:
+    value: { get_attr: [server, networks] }
+  show:
+    value: { get_attr: [server, show] }

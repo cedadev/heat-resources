@@ -1,0 +1,11 @@
+#!/bin/bash
+set -eux
+
+# Replace the metadata URL in /etc/os-collect-config.conf with the public version
+sed -i -e "/\[cfn\]/,/metadata_url/  s/metadata_url.*/metadata_url = https:\/\/halva.sweet.jasmin.ac.uk\/v1\//" /etc/os-collect-config.conf
+
+# Replace the auth URL of the deployments with the public version
+jq \
+  '. | map(.inputs |=  map(if .name == "deploy_auth_url" then .value |= "https://kataifi.sweet.jasmin.ac.uk/v3/" else . end))' \
+  /var/run/heat-config/heat-config > /var/run/heat-config/heat-config.next
+mv /var/run/heat-config/heat-config.next /var/run/heat-config/heat-config
