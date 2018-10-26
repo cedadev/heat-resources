@@ -1,5 +1,5 @@
 #####
-## Template for a Cluster-as-a-Service management machine running AWX
+## Template for a Cluster-as-a-Service management machine
 #####
 
 heat_template_version: 2016-04-08
@@ -71,8 +71,8 @@ resources:
       config: |
         #!/bin/bash
         yum install -y git
-        git clone https://github.com/cedadev/awx-playbook.git /opt/awx-playbook
-        ansible-playbook -c local -i 127.0.0.1, -e "awx_admin_password=$awx_admin_password" /opt/awx-playbook/playbook.yml
+        git clone https://github.com/cedadev/caas-manager-playbook.git /opt/caas-manager-playbook
+        ansible-playbook -c local -i 127.0.0.1, -e "awx_admin_password=$awx_admin_password" /opt/caas-manager-playbook/playbook.yml
 
   admin_password:
     type: OS::Heat::RandomString
