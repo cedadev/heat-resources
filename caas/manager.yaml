@@ -38,7 +38,7 @@ parameters:
   root_volume_size:
     type: number
     label: Size of volume for root filesystem
-    default: 20
+    default: 40
 
   floating_ip:
     type: string
@@ -92,6 +92,5 @@ resources:
 outputs:
   server_id:
     value: { get_attr: [server, server_id] }
-
   admin_password:
     value: { get_attr: [admin_password, value] }

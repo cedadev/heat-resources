@@ -49,15 +49,14 @@ resources:
     type: OS::Nova::Server
     properties:
       name: { get_param: name }
-      image: { get_param: image }
       flavor: { get_param: flavor }
       key_name: { get_param: key_name }
       networks:
         - network: { get_param: network }
-#      block_device_mapping_v2:
-#        - image_id: { get_param: image }
-#          volume_size: { get_param: root_volume_size }
-#          delete_on_termination: true
+      block_device_mapping_v2:
+        - image_id: { get_param: image }
+          volume_size: { get_param: root_volume_size }
+          delete_on_termination: true
       software_config_transport: POLL_SERVER_CFN
       user_data_format: SOFTWARE_CONFIG
       user_data: { get_attr: [install_heat_agents, config] }
